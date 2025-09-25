@@ -12,14 +12,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
-
-data class ImageData(
-    val id: String,
-    val url: String
-) {
-    val imageUrl: String
-        get() = url
-}
+import com.example.lab_week_05.model.CatBreedData
+import com.example.lab_week_05.model.ImageData
 
 interface CatApiService {
     @GET("images/search")
@@ -69,11 +63,17 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call<List<ImageData>>, response: Response<List<ImageData>>) {
                 if(response.isSuccessful){
                     val image = response.body()
-                    val firstImage = image?.firstOrNull()?.imageUrl.orEmpty()
-                    if (firstImage.isNotBlank()) {
-                        imageLoader.loadImage(firstImage, imageResultView)
+                    val firstImage = image?.firstOrNull()
+                    val breedName = if (!firstImage?.breeds.isNullOrEmpty()) {
+                        firstImage?.breeds?.firstOrNull()?.name ?: "Unknown"
+                    } else {
+                        "Unknown"
                     }
-                    apiResponseView.text = getString(R.string.image_placeholder, firstImage)
+                    val imageUrl = firstImage?.imageUrl.orEmpty()
+                    if (imageUrl.isNotBlank()) {
+                        imageLoader.loadImage(imageUrl, imageResultView)
+                    }
+                    apiResponseView.text = getString(R.string.image_placeholder, breedName)
                 }
                 else{
                     Log.e(MAIN_ACTIVITY, "Failed to get response\n" +
